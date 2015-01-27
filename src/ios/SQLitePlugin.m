@@ -48,9 +48,9 @@ static int base64_encode_block(const char* plaintext_in,
 	char* codechar = code_out;
 	char result;
 	char fragment;
-	
+
 	result = state_in->result;
-	
+
 	switch (state_in->step)
 	{
 		while (1)
@@ -89,7 +89,7 @@ static int base64_encode_block(const char* plaintext_in,
 			*codechar++ = base64_encode_value(result);
 			result  = (fragment & 0x03f) >> 0;
 			*codechar++ = base64_encode_value(result);
-			
+
       if(line_length > 0)
       {
         ++(state_in->stepcount);
@@ -109,7 +109,7 @@ static int base64_encode_blockend(char* code_out,
                                   base64_encodestate* state_in)
 {
 	char* codechar = code_out;
-	
+
 	switch (state_in->step)
 	{
 	case step_B:
@@ -125,7 +125,7 @@ static int base64_encode_blockend(char* code_out,
 		break;
 	}
 	*codechar++ = '\n';
-	
+
 	return codechar - code_out;
 }
 
@@ -136,21 +136,21 @@ static void sqlite_regexp(sqlite3_context* context, int argc, sqlite3_value** va
     regex_t regex;
     char* reg = (char*)sqlite3_value_text(values[0]);
     char* text = (char*)sqlite3_value_text(values[1]);
-    
+
     if ( argc != 2 || reg == 0 || text == 0) {
         sqlite3_result_error(context, "SQL function regexp() called with invalid arguments.\n", -1);
         return;
     }
-    
+
     ret = regcomp(&regex, reg, REG_EXTENDED | REG_NOSUB);
     if ( ret != 0 ) {
         sqlite3_result_error(context, "error compiling regular expression", -1);
         return;
     }
-    
+
     ret = regexec(&regex, text , 0, NULL, 0);
     regfree(&regex);
-    
+
     sqlite3_result_int(context, (ret != REG_NOMATCH));
 }
 
@@ -170,6 +170,7 @@ static void sqlite_regexp(sqlite3_context* context, int argc, sqlite3_value** va
 #endif
 
         NSString *docs = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex: 0];
+				docs = [docs stringByAppendingString:@"/NoCloud/"];
         NSLog(@"Detected docs path: %@", docs);
         [self setAppDocsPath:docs];
     }
@@ -216,7 +217,7 @@ static void sqlite_regexp(sqlite3_context* context, int argc, sqlite3_value** va
                 // if(key != NULL) sqlite3_key(db, key, strlen(key));
 
 		sqlite3_create_function(db, "regexp", 2, SQLITE_ANY, NULL, &sqlite_regexp, NULL, NULL);
-	
+
                 // Attempt to read the SQLite master table (test for SQLCipher version):
                 if(sqlite3_exec(db, (const char*)"SELECT count(*) FROM sqlite_master;", NULL, NULL, NULL) == SQLITE_OK) {
                     dbPointer = [NSValue valueWithPointer:db];
@@ -269,7 +270,7 @@ static void sqlite_regexp(sqlite3_context* context, int argc, sqlite3_value** va
 {
     CDVPluginResult* pluginResult = nil;
     NSMutableDictionary *options = [command.arguments objectAtIndex:0];
-    
+
     NSString *dbPath = [self getDBPath:[options objectForKey:@"path"]];
     if(dbPath==NULL) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"You must specify database path"];
@@ -406,11 +407,11 @@ static void sqlite_regexp(sqlite3_context* context, int argc, sqlite3_value** va
                 i = 0;
                 entry = [NSMutableDictionary dictionaryWithCapacity:0];
                 count = sqlite3_column_count(statement);
-				
+
                 while (i < count) {
                     columnValue = nil;
                     columnName = [NSString stringWithFormat:@"%s", sqlite3_column_name(statement, i)];
-                    
+
                     column_type = sqlite3_column_type(statement, i);
                     switch (column_type) {
                         case SQLITE_INTEGER:
@@ -432,11 +433,11 @@ static void sqlite_regexp(sqlite3_context* context, int argc, sqlite3_value** va
                             columnValue = [NSNull null];
                             break;
                     }
-                    
+
                     if (columnValue) {
                         [entry setObject:columnValue forKey:columnName];
                     }
-                    
+
                     i++;
 
                 }
@@ -565,17 +566,17 @@ static void sqlite_regexp(sqlite3_context* context, int argc, sqlite3_value** va
                                     withlength: (int) blob_length
 {
       base64_encodestate b64state;
-	
+
       base64_init_encodestate(&b64state);
 
       //2* ensures 3 bytes -> 4 Base64 characters + null for NSString init
 			char* code = malloc (2*blob_length*sizeof(char));
-  
+
 			int codelength;
       int endlength;
 
       codelength = base64_encode_block(blob_chars,blob_length,code,&b64state,0);
-  
+
 			endlength = base64_encode_blockend(&code[codelength], &b64state);
 
       //Adding in a null in order to use initWithUTF8String, expecting null terminated char* string
@@ -584,7 +585,7 @@ static void sqlite_regexp(sqlite3_context* context, int argc, sqlite3_value** va
       NSString* result = [NSString stringWithUTF8String: code];
 
 			free(code);
-  
+
       return result;
 }
 
